@@ -49,10 +49,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  int _duration = 20;
+  int _duration = 20; //duration of the count down
+  int _resetDuration = 3; //duration waited before the timer is reset with a 1s animation
+  int _resetDelayDuration = 3;
+  int _repeatDelayDuration = 3;
+  bool _repeat = false;
+
   AnimationController _controller;
   Animation<Color> _background;
+
+  int _initialWarningTime = 10;
   bool _initialWarning;
+  int _finalWarningTime = 5;
+  bool _finalWarning;
   Future _resetDelay;
   AnimationStatus _animationStatus;
 
@@ -81,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.initState();
     _controller = AnimationController(
       duration: Duration(seconds: _duration),
-      reverseDuration: Duration(seconds: 1),
+      reverseDuration: Duration(seconds: _resetDuration),
       vsync: this,
     );
 
@@ -90,16 +99,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     _background =
         ColorTween(begin: Colors.green, end: Colors.red).animate(_controller)
-          ..addListener(colorListener)..addStatusListener((AnimationStatus status) {
-            if (_animationStatus != status) {
-              if (_animationStatus == AnimationStatus.forward && status == AnimationStatus.completed && _resetDelay == null) {
-                _initialWarning = false;
-                _resetDelay = new Future.delayed(const Duration(seconds: 3), reset);
-              }
-
-              _animationStatus = status;
-            }
-        });
+          ..addListener(colorListener)..addStatusListener(statusListener);
   }
 
   void reset() async {
@@ -108,21 +108,45 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   void colorListener() async {
-    bool setInitialWarning = false;
     Duration remaining = _controller.duration * (1.0 - _controller.value);
 
-    if (!_initialWarning && remaining.inSeconds < 10 && _controller.status == AnimationStatus.forward) {
-      setInitialWarning = true;
+    if (!_initialWarning && remaining.inSeconds < _initialWarningTime && _controller.status == AnimationStatus.forward) {
+      _initialWarning = true;
       if (await Vibration.hasVibrator()) {
-        Vibration.vibrate(pattern: [250, 750, 250, 750, 250, 750]);
+        List<int> pattern = new List<int>();
+        pattern.add(0);
+        for (int i = 0; i < _initialWarningTime - _finalWarningTime; i++) {
+          pattern.addAll([250, 750]);
+        }
+
+        Vibration.vibrate(pattern: pattern);
       }
     }
 
-    setState(() {
-      if (setInitialWarning) {
-        _initialWarning = true;
+    if (!_finalWarning && remaining.inSeconds < _finalWarningTime && _controller.status == AnimationStatus.forward) {
+      _finalWarning = true;
+      if (await Vibration.hasVibrator()) {
+        List<int> pattern = new List<int>();
+        pattern.add(0);
+        for (int i = 0; i < _finalWarningTime; i++) {
+          pattern.addAll([250, 250, 250, 250]);
+        }
+
+        Vibration.vibrate(pattern: pattern);
       }
-    });
+    }
+  }
+
+  void statusListener(AnimationStatus status) {
+    if (_animationStatus != status) {
+      if (_animationStatus == AnimationStatus.forward && status == AnimationStatus.completed && _resetDelay == null) {
+        _initialWarning = false;
+        _finalWarning = false;
+        _resetDelay = new Future.delayed(Duration(seconds: _resetDelayDuration), reset);
+      }
+
+      _animationStatus = status;
+    }
   }
 
   @override
@@ -171,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                 timerString,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .display1
+                                    .display3
                                     .apply(color: _background.value),
                               ),
                             )
@@ -215,7 +239,7 @@ class CustomTimerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..color = backgroundColor
-      ..strokeWidth = 8.0
+      ..strokeWidth = 6.0
       ..strokeCap = StrokeCap.butt
       ..style = PaintingStyle.stroke;
 

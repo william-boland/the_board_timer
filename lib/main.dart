@@ -50,7 +50,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _duration = 20; //duration of the count down
-  int _resetDuration = 3; //duration waited before the timer is reset with a 1s animation
+  int _resetDuration = 1; //duration waited before the timer is reset with a 1s animation
   int _resetDelayDuration = 3;
   int _repeatDelayDuration = 3;
   bool _repeat = false;
@@ -59,9 +59,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Animation<Color> _background;
 
   int _initialWarningTime = 10;
-  bool _initialWarning;
+  bool _initialWarning = false;
   int _finalWarningTime = 5;
-  bool _finalWarning;
+  bool _finalWarning = false;
   Future _resetDelay;
   AnimationStatus _animationStatus;
 
@@ -93,8 +93,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       reverseDuration: Duration(seconds: _resetDuration),
       vsync: this,
     );
-
-    _initialWarning = false;
 
 
     _background =
@@ -135,6 +133,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         Vibration.vibrate(pattern: pattern);
       }
     }
+
+    setState(() {});
   }
 
   void statusListener(AnimationStatus status) {

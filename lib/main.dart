@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
 
       ),
       home: MyHomePage(title: 'The Board Timer'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -48,11 +49,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  int _duration = 10;
+  int _duration = 20;
   AnimationController _controller;
   Animation<Color> _background;
   bool _initialWarning;
   Future _resetDelay;
+  AnimationStatus _animationStatus;
 
   void startTimer() {
     if (_controller.isAnimating) {
@@ -85,11 +87,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     _initialWarning = false;
 
+
     _background =
         ColorTween(begin: Colors.green, end: Colors.red).animate(_controller)
           ..addListener(colorListener)..addStatusListener((AnimationStatus status) {
-            if (AnimationStatus.completed == status && _resetDelay == null) {
-              _resetDelay = new Future.delayed(const Duration(seconds: 3), reset);
+            if (_animationStatus != status) {
+              if (_animationStatus == AnimationStatus.forward && status == AnimationStatus.completed && _resetDelay == null) {
+                _initialWarning = false;
+                _resetDelay = new Future.delayed(const Duration(seconds: 3), reset);
+              }
+
+              _animationStatus = status;
             }
         });
   }
@@ -103,10 +111,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     bool setInitialWarning = false;
     Duration remaining = _controller.duration * (1.0 - _controller.value);
 
-    if (!_initialWarning && remaining.inSeconds < 10) {
+    if (!_initialWarning && remaining.inSeconds < 10 && _controller.status == AnimationStatus.forward) {
       setInitialWarning = true;
       if (await Vibration.hasVibrator()) {
-        Vibration.vibrate();
+        Vibration.vibrate(pattern: [250, 750, 250, 750, 250, 750]);
       }
     }
 

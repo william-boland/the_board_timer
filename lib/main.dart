@@ -76,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   String get timerString {
     Duration duration = _controller.duration * (1.0 - _controller.value);
-    if (duration.inMilliseconds % 1000 == 0) {
+    if (duration.inMilliseconds % 1000 != 0) {
       duration += new Duration(seconds: 1);
     }
     if (duration.inHours > 0) {

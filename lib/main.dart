@@ -48,6 +48,8 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+enum WhyFarther { harder, smarter, selfStarter, tradingCharter }
+
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _duration = 20; //duration of the count down
   int _resetDuration = 1; //duration waited before the timer is reset with a 1s animation
@@ -64,6 +66,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   bool _finalWarning = false;
   Future _resetDelay;
   AnimationStatus _animationStatus;
+
+
 
   void startTimer() {
     if (_controller.isAnimating) {
@@ -166,6 +170,41 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
         elevation: 0.0,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () async{
+              showModalBottomSheet(context: context, builder: (context) {
+                return Container(
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: Text("Time"),
+                        trailing: Text("20s"),
+                        onTap: () {},
+                      ),
+                      ListTile(
+                        title: Text("Reset Delay"),
+                        trailing: Text("20s"),
+                        onTap: () {},
+                      ),
+                      ListTile(
+                        title: Text("Reset Duration"),
+                        trailing: Text("20s"),
+                        onTap: () {},
+                      ),
+                      ListTile(
+                        title: Text("Repeat"),
+                        trailing: Switch(value: _repeat, onChanged: (isSelected) {},),
+                        onTap: () {},
+                      )
+                    ],
+                  ),
+                );
+              });
+            },
+          )
+        ],
       ),
       body: Container(
           child: Center(
